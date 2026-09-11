@@ -7,4 +7,8 @@ export const config = {
     maxBytes: Number(process.env.URL_FETCH_MAX_BYTES ?? 2_000_000),
     userAgent: "KnowledgeInbox/0.1 (+https://github.com/Sompalkar/turium)",
   },
+  chunking: {
+    maxChars: Number(process.env.CHUNK_MAX_CHARS ?? 900),
+    overlapChars: Number(process.env.CHUNK_OVERLAP_CHARS ?? 150),
+  },
 } as const;
