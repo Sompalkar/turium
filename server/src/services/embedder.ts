@@ -1,4 +1,4 @@
-import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
 import { config } from "../config.js";
 import { logger } from "../lib/logger.js";
 
@@ -7,6 +7,8 @@ let extractor: Promise<FeatureExtractionPipeline> | null = null;
 // The model is a few hundred MB in memory, so load it once and share it.
 function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractor) {
+    // Without a writable cache the model is fetched again after every restart.
+    if (config.embedding.cacheDir) env.cacheDir = config.embedding.cacheDir;
     logger.info("loading embedding model", { model: config.embedding.model });
     extractor = pipeline("feature-extraction", config.embedding.model);
   }

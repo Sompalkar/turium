@@ -7,6 +7,10 @@ import type {
   QueryResponse,
 } from "./types.js";
 
+// Empty in development, where Vite proxies /api. Set to the deployed API origin
+// at build time, because Vite inlines it into the bundle.
+const BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
 interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
   requestId?: string;
@@ -28,12 +32,16 @@ export class ApiError extends Error {
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(path, {
+    response = await fetch(`${BASE_URL}${path}`, {
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
     });
   } catch {
-    throw new ApiError(0, "network_error", "Could not reach the server. Is it running on port 4000?");
+    throw new ApiError(
+      0,
+      "network_error",
+      BASE_URL ? `Could not reach the API at ${BASE_URL}` : "Could not reach the server. Is it running on port 4000?",
+    );
   }
 
   if (!response.ok) {

@@ -34,6 +34,34 @@ are fetching URLs you save and generating answers.
 
 `cd server && npm test` runs the tests.
 
+## Deploying
+
+`render.yaml` describes both services. The API is the fiddly one because it keeps state on disk.
+
+**API.** Root directory `server`, build `npm install --include=dev && npm run build`, start
+`npm start`, health check `/api/health`. It needs Node 24 or newer for `node:sqlite`, which
+`server/.node-version` pins. Set these:
+
+| Variable | Value |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | your key |
+| `ALLOWED_ORIGINS` | the frontend origin, no trailing slash |
+| `DATABASE_FILE` | a path on the mounted disk, e.g. `/var/data/knowledge-inbox.db` |
+| `EMBEDDING_CACHE_DIR` | also on the disk, e.g. `/var/data/models` |
+
+Both disk paths matter. Without them the SQLite file and the 90 MB model are thrown away on every
+deploy, so the library empties itself and the first request after each restart pays to download
+the model again. With the cache on a disk the model loads in about 60ms instead. Render's free
+plan does not offer disks, so a free instance resets on every deploy.
+
+**Frontend.** Root directory `frontend`, build `npm install --include=dev && npm run build`,
+publish `dist`, with a rewrite from `/*` to `/index.html`. Set `VITE_API_BASE_URL` to the API
+origin. Vite inlines it at build time, so changing it needs a rebuild, not just a restart.
+
+The two are on different origins in production, which is why the API has a CORS allowlist.
+Locally none of this applies: Vite proxies `/api`, everything is same origin, and both variables
+can stay empty.
+
 ## How it works
 
 Saving something splits it into chunks, turns each chunk into a vector, and writes all of it to
