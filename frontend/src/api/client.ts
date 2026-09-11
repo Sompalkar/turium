@@ -1,4 +1,4 @@
-import type { IngestRequest, ItemListResponse, ItemSummary } from "./types.js";
+import type { IngestRequest, ItemListResponse, ItemSummary, QueryResponse } from "./types.js";
 
 interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
@@ -47,4 +47,7 @@ export const api = {
 
   ingest: (body: IngestRequest) =>
     request<{ item: ItemSummary }>("/api/ingest", { method: "POST", body: JSON.stringify(body) }),
+
+  query: (question: string) =>
+    request<QueryResponse>("/api/query", { method: "POST", body: JSON.stringify({ question }) }),
 };
