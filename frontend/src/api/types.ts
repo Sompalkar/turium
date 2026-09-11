@@ -45,6 +45,8 @@ export interface AnswerSource {
 }
 
 export interface QueryResponse {
+  id: string;
+  createdAt: string;
   question: string;
   answer: string;
   sources: AnswerSource[];
@@ -55,4 +57,9 @@ export interface QueryResponse {
     inputTokens: number;
     outputTokens: number;
   };
+}
+
+export interface HistoryResponse {
+  queries: QueryResponse[];
+  pagination: { limit: number; total: number };
 }
