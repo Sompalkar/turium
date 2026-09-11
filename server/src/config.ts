@@ -8,7 +8,14 @@ try {
 export const config = {
   port: Number(process.env.PORT ?? 4000),
   nodeEnv: process.env.NODE_ENV ?? "development",
+  isProduction: process.env.NODE_ENV === "production",
   databaseFile: process.env.DATABASE_FILE ?? "data/knowledge-inbox.db",
+  // Browsers on another origin need to be named here. In development the Vite
+  // proxy keeps everything same origin, so the list can stay empty.
+  allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean),
   urlFetch: {
     timeoutMs: Number(process.env.URL_FETCH_TIMEOUT_MS ?? 10_000),
     maxBytes: Number(process.env.URL_FETCH_MAX_BYTES ?? 2_000_000),
@@ -16,6 +23,8 @@ export const config = {
   },
   embedding: {
     model: process.env.EMBEDDING_MODEL ?? "Xenova/all-MiniLM-L6-v2",
+    // Point this at a persistent disk or the model is downloaded again on every deploy.
+    cacheDir: process.env.EMBEDDING_CACHE_DIR ?? "",
     dimensions: Number(process.env.EMBEDDING_DIMENSIONS ?? 384),
     batchSize: Number(process.env.EMBEDDING_BATCH_SIZE ?? 16),
   },
