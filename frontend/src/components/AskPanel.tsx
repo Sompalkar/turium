@@ -1,6 +1,7 @@
-import { useState, type FormEvent, type KeyboardEvent } from "react";
+import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useAsk } from "../hooks/useAsk.js";
 import type { ItemSummary } from "../api/types.js";
+import { parseCitedNumbers } from "../lib/citations.js";
 import { AnswerText } from "./AnswerText.js";
 import { SourceCard } from "./SourceCard.js";
 import { Button } from "./ui/Button.js";
@@ -14,7 +15,18 @@ interface Props {
 
 export function AskPanel({ items }: Props) {
   const [question, setQuestion] = useState("");
+  const [showOthers, setShowOthers] = useState(false);
   const { result, isAsking, error, ask } = useAsk();
+
+  // The model cites only what it used, so the rest are near misses worth keeping aside.
+  const { cited, others } = useMemo(() => {
+    if (!result) return { cited: [], others: [] };
+    const used = parseCitedNumbers(result.answer);
+    return {
+      cited: result.sources.filter((source) => used.has(source.citation)),
+      others: result.sources.filter((source) => !used.has(source.citation)),
+    };
+  }, [result]);
 
   const isTooShort = question.trim().length < 3;
   const suggestions = items.slice(0, 2).map((item) => `What did I save about ${firstWords(item.title)}?`);
@@ -22,6 +34,7 @@ export function AskPanel({ items }: Props) {
   async function submit(value: string) {
     if (value.trim().length < 3 || isAsking) return;
     setQuestion(value);
+    setShowOthers(false);
     await ask(value.trim());
   }
 
@@ -75,18 +88,35 @@ export function AskPanel({ items }: Props) {
 
       {result ? (
         <div className="result">
-          <AnswerText text={result.answer} sourceCount={result.sources.length} />
+          <AnswerText text={result.answer} sources={result.sources} />
 
-          {result.sources.length > 0 ? (
+          {cited.length > 0 ? (
             <>
               <h3 className="subhead">
-                Sources <span className="counter">{result.sources.length}</span>
+                Used in answer <span className="counter">{cited.length}</span>
               </h3>
               <ol className="sources">
-                {result.sources.map((source) => (
-                  <SourceCard key={source.chunkId} source={source} />
+                {cited.map((source) => (
+                  <SourceCard key={source.chunkId} source={source} isCited />
                 ))}
               </ol>
+            </>
+          ) : null}
+
+          {others.length > 0 ? (
+            <>
+              <h3 className="subhead">
+                <button type="button" className="link-btn" onClick={() => setShowOthers(!showOthers)}>
+                  {showOthers ? "Hide" : "Show"} {others.length} other {others.length === 1 ? "match" : "matches"}
+                </button>
+              </h3>
+              {showOthers ? (
+                <ol className="sources">
+                  {others.map((source) => (
+                    <SourceCard key={source.chunkId} source={source} isCited={false} />
+                  ))}
+                </ol>
+              ) : null}
             </>
           ) : null}
 
