@@ -1,3 +1,10 @@
+// Reads server/.env if it exists. Real deployments set real environment variables.
+try {
+  process.loadEnvFile();
+} catch {
+  // No .env file, which is fine.
+}
+
 export const config = {
   port: Number(process.env.PORT ?? 4000),
   nodeEnv: process.env.NODE_ENV ?? "development",
@@ -11,6 +18,11 @@ export const config = {
     model: process.env.EMBEDDING_MODEL ?? "Xenova/all-MiniLM-L6-v2",
     dimensions: Number(process.env.EMBEDDING_DIMENSIONS ?? 384),
     batchSize: Number(process.env.EMBEDDING_BATCH_SIZE ?? 16),
+  },
+  anthropic: {
+    apiKey: process.env.ANTHROPIC_API_KEY ?? "",
+    model: process.env.ANSWER_MODEL ?? "claude-opus-5",
+    maxTokens: Number(process.env.ANSWER_MAX_TOKENS ?? 1024),
   },
   retrieval: {
     topK: Number(process.env.RETRIEVAL_TOP_K ?? 5),
