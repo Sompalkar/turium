@@ -44,6 +44,10 @@ The model never sees your library, only the handful of passages retrieved for th
 front of it. That is what keeps answers grounded, and it is also why a question costs a few
 hundred tokens instead of however large your inbox has grown.
 
+Answers are kept, along with the sources behind them. Filing one is deliberately not allowed to
+fail the request: the answer has already been paid for, so a write that throws is logged and the
+answer still goes back.
+
 ## Layout
 
 ```
@@ -59,7 +63,7 @@ server/src
 
 frontend/src
 ├── api/            one client, typed errors
-├── hooks/          useItems, useAsk
+├── hooks/          useItems, useAsk, useHistory
 └── components/     feature components, plus ui/ for the shared pieces
 ```
 
@@ -86,6 +90,8 @@ into, which is handy for seeing what retrieval actually has to work with.
 
 ```jsonc
 {
+  "id": "uuid",
+  "createdAt": "2026-09-11T13:06:52.031Z",
   "question": "how big should chunks be?",
   "answer": "Around two hundred tokens with a small overlap [1].",
   "sources": [
@@ -106,7 +112,13 @@ into, which is handy for seeing what retrieval actually has to work with.
 ```
 
 The `citation` numbers line up with the `[1]` markers in the answer, so the interface can link
-each one back to the passage it came from.
+each one back to the passage it came from. The model cites only the sources it actually used, so
+a five source answer often carries two or three citations; the interface separates the ones it
+leaned on from the near misses rather than implying all of them were used.
+
+Every answer is also written to a `queries` table. `GET /queries` returns them newest first
+(`limit` default 20, max 50) in the same shape, which is what makes an answer survive a refresh,
+and `DELETE /queries` clears them and reports how many went.
 
 Errors always come back the same shape, carrying a request id that matches the log lines for
 that request:
