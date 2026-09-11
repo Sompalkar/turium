@@ -4,18 +4,24 @@ import { Badge } from "./ui/Badge.js";
 
 const CLAMP_LENGTH = 220;
 
-export function SourceCard({ source }: { source: AnswerSource }) {
+interface Props {
+  source: AnswerSource;
+  isCited: boolean;
+}
+
+export function SourceCard({ source, isCited }: Props) {
   const [isOpen, setIsOpen] = useState(false);
   const isLong = source.snippet.length > CLAMP_LENGTH;
 
   const shown = isOpen || !isLong ? source.snippet : `${source.snippet.slice(0, CLAMP_LENGTH).trimEnd()}...`;
 
   return (
-    <li className="source" id={`source-${source.citation}`}>
+    <li className={isCited ? "source source-cited" : "source"} id={`source-${source.citation}`}>
       <div className="source-top">
         <span className="cite cite-static">{source.citation}</span>
         <h4>{source.title}</h4>
         <Badge sourceType={source.sourceType} />
+        {isCited ? null : <span className="unused">not used</span>}
         <span className="score" title="Similarity between your question and this passage">
           {source.score.toFixed(2)}
         </span>
