@@ -1,6 +1,7 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { toSummary } from "../domain/item.js";
 import { itemRepository } from "../repositories/item.repository.js";
+import { chunkRepository } from "../repositories/chunk.repository.js";
 import { ingestRequestSchema, listItemsQuerySchema } from "../schemas/ingest.schema.js";
 import { ingestContent } from "../services/ingest.service.js";
 import { notFound } from "../lib/errors.js";
@@ -25,6 +26,16 @@ itemRouter.get("/items", (req: Request, res: Response, next: NextFunction) => {
       items: items.map(toSummary),
       pagination: { limit, offset, total: itemRepository.countAll() },
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+itemRouter.get("/items/:id/chunks", (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = String(req.params.id);
+    if (!itemRepository.findById(id)) throw notFound(`No item with id ${id}`);
+    res.json({ chunks: chunkRepository.listByItem(id) });
   } catch (error) {
     next(error);
   }
