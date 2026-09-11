@@ -1,6 +1,7 @@
 import express from "express";
 import { healthRouter } from "./routes/health.routes.js";
 import { itemRouter } from "./routes/item.routes.js";
+import { queryRouter } from "./routes/query.routes.js";
 import { requestContext } from "./middleware/request-context.js";
 import { errorHandler, notFoundHandler } from "./middleware/error-handler.js";
 
@@ -12,6 +13,7 @@ export function createApp() {
 
   app.use("/api", healthRouter);
   app.use("/api", itemRouter);
+  app.use("/api", queryRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
