@@ -10,6 +10,10 @@ export interface ItemSummary {
   createdAt: string;
 }
 
+export interface ItemDetail extends ItemSummary {
+  content: string;
+}
+
 export interface ItemListResponse {
   items: ItemSummary[];
   pagination: { limit: number; offset: number; total: number };

@@ -1,4 +1,4 @@
-import type { IngestRequest, ItemListResponse, ItemSummary, QueryResponse } from "./types.js";
+import type { IngestRequest, ItemDetail, ItemListResponse, ItemSummary, QueryResponse } from "./types.js";
 
 interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
@@ -44,6 +44,8 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 export const api = {
   listItems: (limit = 50) => request<ItemListResponse>(`/api/items?limit=${limit}`),
+
+  getItem: (id: string) => request<{ item: ItemDetail }>(`/api/items/${id}`),
 
   ingest: (body: IngestRequest) =>
     request<{ item: ItemSummary }>("/api/ingest", { method: "POST", body: JSON.stringify(body) }),
