@@ -561,3 +561,97 @@ a.cite:hover {
   color: var(--muted);
   font-variant-numeric: tabular-nums;
 }
+
+/* Citation tooltip */
+
+.cite-wrap {
+  position: relative;
+  display: inline;
+}
+
+.cite-tip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  transform: translateY(3px);
+  z-index: 20;
+  width: max-content;
+  max-width: min(320px, 70vw);
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 10px 12px;
+  border-radius: var(--radius);
+  background: var(--ink);
+  color: #f3f3f1;
+  box-shadow: var(--shadow);
+  font-size: 12.5px;
+  line-height: 1.5;
+  text-align: left;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s;
+}
+
+.cite-wrap:hover .cite-tip,
+.cite-wrap:focus-within .cite-tip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* The little arrow pointing back at the chip. */
+.cite-tip::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: var(--arrow-left, 50%);
+  margin-left: -5px;
+  border: 5px solid transparent;
+  border-top-color: var(--ink);
+}
+
+.cite-tip-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.cite-tip-title {
+  font-weight: 650;
+  overflow-wrap: anywhere;
+}
+
+.cite-tip-score {
+  margin-left: auto;
+  opacity: 0.6;
+  font-variant-numeric: tabular-nums;
+}
+
+.cite-tip-text {
+  opacity: 0.82;
+  overflow-wrap: anywhere;
+}
+
+.cite-tip-host {
+  opacity: 0.6;
+  font-size: 11.5px;
+}
+
+/* Cited against merely retrieved */
+
+.source-cited {
+  background: var(--accent-tint);
+}
+
+.unused {
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  padding: 1px 5px;
+}
