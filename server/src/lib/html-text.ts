@@ -11,8 +11,17 @@ const NOISE_SELECTORS = [
   "footer",
   "aside",
   "form",
+  "figure",
   "[aria-hidden='true']",
+  "[role='navigation']",
+  "[role='banner']",
+  "[role='contentinfo']",
+  "[role='complementary']",
+  "[role='search']",
 ].join(",");
+
+// Menus and link lists leave behind stray one or two character lines like "v t e".
+const MIN_LINE_LENGTH = 3;
 
 const BLOCK_SELECTORS = "p,div,section,article,h1,h2,h3,h4,h5,h6,li,br,tr,blockquote,pre,figcaption";
 
