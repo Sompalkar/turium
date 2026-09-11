@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useAsk } from "../hooks/useAsk.js";
-import type { ItemSummary } from "../api/types.js";
+import type { ItemSummary, QueryResponse } from "../api/types.js";
 import { parseCitedNumbers } from "../lib/citations.js";
 import { AnswerText } from "./AnswerText.js";
 import { SourceCard } from "./SourceCard.js";
@@ -11,12 +11,15 @@ import { Panel } from "./ui/Panel.js";
 
 interface Props {
   items: ItemSummary[];
+  // The answer on screen is owned by the app, so history can put an old one back.
+  result: QueryResponse | null;
+  onAnswered: (result: QueryResponse) => void;
 }
 
-export function AskPanel({ items }: Props) {
+export function AskPanel({ items, result, onAnswered }: Props) {
   const [question, setQuestion] = useState("");
   const [showOthers, setShowOthers] = useState(false);
-  const { result, isAsking, error, ask } = useAsk();
+  const { isAsking, error, ask } = useAsk();
 
   // The model cites only what it used, so the rest are near misses worth keeping aside.
   const { cited, others } = useMemo(() => {
@@ -35,7 +38,8 @@ export function AskPanel({ items }: Props) {
     if (value.trim().length < 3 || isAsking) return;
     setQuestion(value);
     setShowOthers(false);
-    await ask(value.trim());
+    const response = await ask(value.trim());
+    if (response) onAnswered(response);
   }
 
   function handleSubmit(event: FormEvent) {
@@ -88,6 +92,7 @@ export function AskPanel({ items }: Props) {
 
       {result ? (
         <div className="result">
+          <p className="result-question">{result.question}</p>
           <AnswerText text={result.answer} sources={result.sources} />
 
           {cited.length > 0 ? (

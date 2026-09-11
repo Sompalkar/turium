@@ -1,4 +1,11 @@
-import type { IngestRequest, ItemDetail, ItemListResponse, ItemSummary, QueryResponse } from "./types.js";
+import type {
+  HistoryResponse,
+  IngestRequest,
+  ItemDetail,
+  ItemListResponse,
+  ItemSummary,
+  QueryResponse,
+} from "./types.js";
 
 interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
@@ -52,4 +59,8 @@ export const api = {
 
   query: (question: string) =>
     request<QueryResponse>("/api/query", { method: "POST", body: JSON.stringify({ question }) }),
+
+  listQueries: (limit = 20) => request<HistoryResponse>(`/api/queries?limit=${limit}`),
+
+  clearQueries: () => request<{ deleted: number }>("/api/queries", { method: "DELETE" }),
 };
