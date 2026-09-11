@@ -2,11 +2,19 @@ import { z } from "zod";
 
 const MAX_NOTE_LENGTH = 50_000;
 
-export const ingestRequestSchema = z.object({
+const noteSchema = z.object({
   sourceType: z.literal("note"),
   text: z.string().trim().min(1, "text must not be empty").max(MAX_NOTE_LENGTH),
   title: z.string().trim().min(1).max(200).optional(),
 });
+
+const urlSchema = z.object({
+  sourceType: z.literal("url"),
+  url: z.string().trim().min(1, "url must not be empty"),
+  title: z.string().trim().min(1).max(200).optional(),
+});
+
+export const ingestRequestSchema = z.discriminatedUnion("sourceType", [noteSchema, urlSchema]);
 
 export type IngestRequest = z.infer<typeof ingestRequestSchema>;
 
