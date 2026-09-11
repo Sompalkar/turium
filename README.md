@@ -5,7 +5,7 @@ content and cite the passages they came from.
 
 ## Requirements
 
-- Node 22 or newer (uses the built in `node:sqlite` module)
+- Node 24 or newer (uses the built in `node:sqlite` module)
 - An Anthropic API key
 
 ## Running it
@@ -250,29 +250,41 @@ ground an answer in and no reason to pay for the call.
 
 ## What breaks at scale
 
-Retrieval is linear in the number of chunks and every vector is loaded into memory to score it.
+Every query loads every vector out of SQLite and scores it. Measured on this machine, scoring
+and sorting random 384 dimension vectors:
 
-| Chunks | Scan | Vectors in memory |
+| Chunks | Scan and sort | Vectors on disk and in memory |
 | --- | --- | --- |
-| 1,000 | a few ms | 1.5 MB |
-| 100,000 | around half a second | 150 MB |
-| 10,000,000 | about a minute | 15 GB |
+| 1,000 | 1ms | 2 MB |
+| 100,000 | 52ms | 154 MB |
+| 1,000,000 | 601ms | 1.5 GB |
 
-So the honest ceiling is roughly 100k chunks, a few thousand documents. Past that the fix is an
-approximate nearest neighbour index: `sqlite-vec` to stay in SQLite, or Postgres with `pgvector`
-and an HNSW index. Both trade a little recall for orders of magnitude of speed.
+The arithmetic is not the problem, which surprised me: a million dot products is only 600ms. The
+problem is the 154 MB being read out of SQLite and turned into Float32Arrays on *every single
+question*, because nothing is cached between requests. That I/O dominates long before the maths
+does.
 
-The other limit is that ingest is synchronous. Saving a URL fetches the page, chunks it and
-embeds every chunk before the request returns, so a long article can hold the connection for
-several seconds and a slow site holds it for the full 10 second timeout.
+So the practical ceiling is around 100k chunks, a few thousand documents, and the first fix is
+not an index but a cache: hold the vectors in memory and reload only when something is ingested.
+That alone buys an order of magnitude for very little code.
+
+Past a million chunks the memory itself becomes the wall and an approximate nearest neighbour
+index is the real answer, either `sqlite-vec` to stay in one file or Postgres with `pgvector` and
+an HNSW index. Both trade a little recall for orders of magnitude of speed.
+
+The other limit has nothing to do with vectors: ingest is synchronous. Saving a URL fetches the
+page, chunks it and embeds every chunk before the response is sent, so a long article holds the
+connection for several seconds and a slow site holds it for the full 10 second timeout.
 
 ## What would change in production
 
 - **Ingest becomes a job.** `POST /ingest` would store the item as `pending` and return
   immediately, with a worker doing the fetch and embed and the UI polling for status. That fixes
   the long request and gives retries for free.
-- **An index once the library is large enough.** Not before. An HNSW index is only worth its
-  complexity past the scan ceiling above.
+- **Cache the vectors in memory** before reaching for an index. The numbers above say the
+  repeated deserialisation costs more than the search does.
+- **An index once the library is past a million chunks.** Not before. HNSW is only worth its
+  complexity once memory, not I/O, is the binding constraint.
 - **Re-embedding.** The embedding model name is stored per chunk and retrieval filters on it, so
   changing models today silently hides all the old content. Production needs a backfill job that
   re-embeds everything and swaps over.
