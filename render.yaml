@@ -1,0 +1,43 @@
+# Render blueprint. The API needs a disk, which the free plan does not offer, so
+# on a free instance set DATABASE_FILE to a local path and expect it to reset on
+# every deploy.
+services:
+  - type: web
+    name: knowledge-inbox-api
+    runtime: node
+    plan: starter
+    rootDir: server
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Comma separated, no trailing slash, e.g. https://knowledge-inbox-web.onrender.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+      - key: DATABASE_FILE
+        value: /var/data/knowledge-inbox.db
+      - key: EMBEDDING_CACHE_DIR
+        value: /var/data/models
+    disk:
+      name: data
+      mountPath: /var/data
+      sizeGB: 1
+
+  - type: web
+    name: knowledge-inbox-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install --include=dev && npm run build
+    staticPublishPath: dist
+    envVars:
+      # The API origin, baked into the bundle at build time.
+      - key: VITE_API_BASE_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
