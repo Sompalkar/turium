@@ -12,6 +12,12 @@ export const config = {
     dimensions: Number(process.env.EMBEDDING_DIMENSIONS ?? 384),
     batchSize: Number(process.env.EMBEDDING_BATCH_SIZE ?? 16),
   },
+  retrieval: {
+    topK: Number(process.env.RETRIEVAL_TOP_K ?? 5),
+    minScore: Number(process.env.RETRIEVAL_MIN_SCORE ?? 0.15),
+    // Stops one long document from filling every slot.
+    maxPerItem: Number(process.env.RETRIEVAL_MAX_PER_ITEM ?? 3),
+  },
   chunking: {
     maxChars: Number(process.env.CHUNK_MAX_CHARS ?? 900),
     overlapChars: Number(process.env.CHUNK_OVERLAP_CHARS ?? 150),
