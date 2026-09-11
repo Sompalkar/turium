@@ -30,6 +30,15 @@ export function errorHandler(
     });
   }
 
+  // express.json throws this when the body is not valid JSON. That is the caller's fault.
+  if (error instanceof SyntaxError && "body" in error) {
+    req.log.warn("request body was not valid json");
+    return res.status(400).json({
+      error: { code: "malformed_json", message: "Request body is not valid JSON" },
+      requestId: req.requestId,
+    });
+  }
+
   if (error instanceof AppError) {
     req.log.warn("request rejected", { code: error.code, status: error.status });
     return res.status(error.status).json({
