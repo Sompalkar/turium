@@ -1,4 +1,8 @@
 import type { ItemSummary } from "../api/types.js";
+import { ItemRow } from "./ItemRow.js";
+import { EmptyState } from "./ui/EmptyState.js";
+import { ErrorNote } from "./ui/ErrorNote.js";
+import { Panel } from "./ui/Panel.js";
 
 interface Props {
   items: ItemSummary[];
@@ -8,47 +12,35 @@ interface Props {
 }
 
 export function ItemList({ items, total, isLoading, error }: Props) {
-  return (
-    <section className="panel">
-      <h2>
-        Saved items <span className="count">{total}</span>
-      </h2>
+  const isFirstLoad = isLoading && items.length === 0;
 
-      {error ? <p className="error">{error}</p> : null}
-      {isLoading && items.length === 0 ? <p className="muted">Loading…</p> : null}
-      {!isLoading && items.length === 0 && !error ? (
-        <p className="muted">Nothing saved yet. Add a note or a URL to get started.</p>
+  return (
+    <Panel title="Inbox" action={total > 0 ? <span className="counter">{total}</span> : undefined}>
+      {error ? <ErrorNote message={error} /> : null}
+
+      {isFirstLoad ? (
+        <ul className="items" aria-hidden="true">
+          {[0, 1, 2].map((key) => (
+            <li key={key} className="item skeleton">
+              <span className="sk sk-title" />
+              <span className="sk sk-line" />
+              <span className="sk sk-line sk-short" />
+            </li>
+          ))}
+        </ul>
       ) : null}
 
-      <ul className="items">
-        {items.map((item) => (
-          <li key={item.id}>
-            <div className="item-head">
-              <span className={`badge badge-${item.sourceType}`}>{item.sourceType}</span>
-              <h3>{item.title}</h3>
-            </div>
-            <p className="preview">{item.preview}</p>
-            <div className="item-meta">
-              <span>{formatDate(item.createdAt)}</span>
-              <span>{item.contentLength.toLocaleString()} chars</span>
-              {item.sourceUrl ? (
-                <a href={item.sourceUrl} target="_blank" rel="noreferrer">
-                  source
-                </a>
-              ) : null}
-            </div>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
+      {!isLoading && items.length === 0 && !error ? (
+        <EmptyState title="Nothing saved yet" hint="Add a note or a link and it becomes searchable straight away." />
+      ) : null}
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleString(undefined, {
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
+      {items.length > 0 ? (
+        <ul className="items">
+          {items.map((item) => (
+            <ItemRow key={item.id} item={item} />
+          ))}
+        </ul>
+      ) : null}
+    </Panel>
+  );
 }
