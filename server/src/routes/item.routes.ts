@@ -35,7 +35,13 @@ itemRouter.get("/items/:id/chunks", (req: Request, res: Response, next: NextFunc
   try {
     const id = String(req.params.id);
     if (!itemRepository.findById(id)) throw notFound(`No item with id ${id}`);
-    res.json({ chunks: chunkRepository.listByItem(id) });
+
+    // The raw vector is noise here, so report only whether the chunk has one.
+    const chunks = chunkRepository.listByItem(id).map(({ embedding, ...chunk }) => ({
+      ...chunk,
+      embedded: embedding !== null,
+    }));
+    res.json({ chunks });
   } catch (error) {
     next(error);
   }

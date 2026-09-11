@@ -29,4 +29,11 @@ export const MIGRATIONS: ReadonlyArray<{ name: string; sql: string }> = [
       CREATE INDEX idx_chunks_item_id ON chunks (item_id);
     `,
   },
+  {
+    name: "003_add_chunk_embeddings",
+    sql: `
+      ALTER TABLE chunks ADD COLUMN embedding BLOB;
+      ALTER TABLE chunks ADD COLUMN embedding_model TEXT;
+    `,
+  },
 ];

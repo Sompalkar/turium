@@ -17,6 +17,20 @@ export function getDb(): DatabaseSync {
   return instance;
 }
 
+// Writes that must all land or none of them.
+export function withTransaction<T>(work: () => T): T {
+  const db = getDb();
+  db.exec("BEGIN");
+  try {
+    const result = work();
+    db.exec("COMMIT");
+    return result;
+  } catch (error) {
+    db.exec("ROLLBACK");
+    throw error;
+  }
+}
+
 // Each migration runs once. Applied names are tracked in the db itself.
 function runMigrations(db: DatabaseSync) {
   db.exec("CREATE TABLE IF NOT EXISTS schema_migrations (name TEXT PRIMARY KEY)");
