@@ -3,7 +3,9 @@ import type { Item } from "../domain/item.js";
 import type { IngestRequest } from "../schemas/ingest.schema.js";
 import { itemRepository } from "../repositories/item.repository.js";
 import { fetchPage } from "./url-fetcher.js";
-import { storeChunksForItem } from "./chunking.service.js";
+import { buildChunks, embedChunks } from "./chunking.service.js";
+import { chunkRepository } from "../repositories/chunk.repository.js";
+import { withTransaction } from "../db/client.js";
 import type { Logger } from "../lib/logger.js";
 
 export async function ingestContent(request: IngestRequest, log: Logger): Promise<Item> {
@@ -11,8 +13,13 @@ export async function ingestContent(request: IngestRequest, log: Logger): Promis
 
   const item: Item = { id: randomUUID(), createdAt: new Date().toISOString(), ...draft };
 
-  itemRepository.insert(item);
-  const chunks = storeChunksForItem(item, log);
+  // Embed before writing anything, so a failure here never leaves an unsearchable item.
+  const chunks = await embedChunks(buildChunks(item));
+
+  withTransaction(() => {
+    itemRepository.insert(item);
+    chunkRepository.insertMany(chunks);
+  });
 
   log.info("item ingested", {
     itemId: item.id,
