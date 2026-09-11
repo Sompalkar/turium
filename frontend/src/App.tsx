@@ -7,18 +7,23 @@ export function App() {
   const { items, total, isLoading, error, reload } = useItems();
 
   return (
-    <div className="page">
-      <header>
-        <h1>Knowledge Inbox</h1>
-        <p className="muted">Save notes and pages, then ask questions about them.</p>
+    <div className="app">
+      <header className="topbar">
+        <div className="topbar-inner">
+          <div className="brand">
+            <span className="brand-mark" aria-hidden="true" />
+            <span className="brand-name">Knowledge Inbox</span>
+          </div>
+          <p className="brand-tag">Save what matters, ask it later</p>
+        </div>
       </header>
 
-      <main className="columns">
-        <div className="column">
-          <AddItemForm onAdded={reload} />
-          <AskPanel />
+      <main className="layout">
+        <div className="col col-main">
+          <AskPanel items={items} />
         </div>
-        <div className="column">
+        <div className="col col-side">
+          <AddItemForm onAdded={reload} />
           <ItemList items={items} total={total} isLoading={isLoading} error={error} />
         </div>
       </main>

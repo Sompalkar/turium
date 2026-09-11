@@ -1,36 +1,77 @@
-import { useState, type FormEvent } from "react";
+import { useState, type FormEvent, type KeyboardEvent } from "react";
 import { useAsk } from "../hooks/useAsk.js";
+import type { ItemSummary } from "../api/types.js";
 import { AnswerText } from "./AnswerText.js";
+import { SourceCard } from "./SourceCard.js";
+import { Button } from "./ui/Button.js";
+import { EmptyState } from "./ui/EmptyState.js";
+import { ErrorNote } from "./ui/ErrorNote.js";
+import { Panel } from "./ui/Panel.js";
 
-export function AskPanel() {
+interface Props {
+  items: ItemSummary[];
+}
+
+export function AskPanel({ items }: Props) {
   const [question, setQuestion] = useState("");
   const { result, isAsking, error, ask } = useAsk();
 
-  const isEmpty = question.trim().length < 3;
+  const isTooShort = question.trim().length < 3;
+  const suggestions = items.slice(0, 2).map((item) => `What did I save about ${firstWords(item.title)}?`);
 
-  async function handleSubmit(event: FormEvent) {
+  async function submit(value: string) {
+    if (value.trim().length < 3 || isAsking) return;
+    setQuestion(value);
+    await ask(value.trim());
+  }
+
+  function handleSubmit(event: FormEvent) {
     event.preventDefault();
-    if (isEmpty || isAsking) return;
-    await ask(question.trim());
+    void submit(question);
+  }
+
+  // Enter asks, shift+enter adds a line. Questions are usually one line.
+  function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      void submit(question);
+    }
   }
 
   return (
-    <section className="panel">
-      <h2>Ask a question</h2>
-
-      <form className="ask-form" onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="What did I save about vector stores?"
+    <Panel title="Ask">
+      <form onSubmit={handleSubmit} className="stack">
+        <textarea
+          className="ask-input"
+          rows={2}
+          placeholder="Ask anything about what you have saved"
           value={question}
           onChange={(event) => setQuestion(event.target.value)}
+          onKeyDown={handleKeyDown}
         />
-        <button type="submit" className="primary" disabled={isEmpty || isAsking}>
-          {isAsking ? "Thinking…" : "Ask"}
-        </button>
+        <div className="form-foot">
+          <Button type="submit" disabled={isTooShort} loading={isAsking}>
+            {isAsking ? "Searching" : "Ask"}
+          </Button>
+          <span className="hint">Enter to ask, shift and enter for a new line.</span>
+        </div>
       </form>
 
-      {error ? <p className="error">{error}</p> : null}
+      {error ? <ErrorNote message={error} /> : null}
+
+      {!result && !error && !isAsking ? (
+        items.length === 0 ? (
+          <EmptyState title="Answers come from your own notes" hint="Save something first, then ask about it." />
+        ) : (
+          <div className="suggestions">
+            {suggestions.map((suggestion) => (
+              <button key={suggestion} type="button" className="chip" onClick={() => void submit(suggestion)}>
+                {suggestion}
+              </button>
+            ))}
+          </div>
+        )
+      ) : null}
 
       {result ? (
         <div className="result">
@@ -38,37 +79,30 @@ export function AskPanel() {
 
           {result.sources.length > 0 ? (
             <>
-              <h3 className="sources-title">Sources</h3>
+              <h3 className="subhead">
+                Sources <span className="counter">{result.sources.length}</span>
+              </h3>
               <ol className="sources">
                 {result.sources.map((source) => (
-                  <li key={source.chunkId} id={`source-${source.citation}`}>
-                    <div className="source-head">
-                      <span className="cite cite-static">{source.citation}</span>
-                      <strong>{source.title}</strong>
-                      <span className="score" title="similarity score">
-                        {source.score.toFixed(2)}
-                      </span>
-                    </div>
-                    <p className="snippet">{source.snippet}</p>
-                    {source.sourceUrl ? (
-                      <a href={source.sourceUrl} target="_blank" rel="noreferrer">
-                        {source.sourceUrl}
-                      </a>
-                    ) : null}
-                  </li>
+                  <SourceCard key={source.chunkId} source={source} />
                 ))}
               </ol>
             </>
           ) : null}
 
           <p className="stats">
-            searched {result.stats.candidateChunks} chunks in {result.stats.retrievalMs}ms
+            {result.stats.candidateChunks} chunks searched in {result.stats.retrievalMs}ms
             {result.stats.model !== "none"
-              ? ` · ${result.stats.model} · ${result.stats.inputTokens} in / ${result.stats.outputTokens} out`
-              : null}
+              ? ` · ${result.stats.model} · ${result.stats.inputTokens} in, ${result.stats.outputTokens} out`
+              : ""}
           </p>
         </div>
       ) : null}
-    </section>
+    </Panel>
   );
+}
+
+function firstWords(title: string): string {
+  const words = title.split(/\s+/).slice(0, 5).join(" ");
+  return words.replace(/[.,;:]$/, "").toLowerCase();
 }
