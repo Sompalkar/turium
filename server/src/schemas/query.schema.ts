@@ -7,3 +7,9 @@ export const queryRequestSchema = z.object({
 });
 
 export type QueryRequest = z.infer<typeof queryRequestSchema>;
+
+export const historyQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(50).default(20),
+});
+
+export type HistoryQuery = z.infer<typeof historyQuerySchema>;
