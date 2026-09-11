@@ -7,10 +7,10 @@ import { notFound } from "../lib/errors.js";
 
 export const itemRouter = Router();
 
-itemRouter.post("/ingest", (req: Request, res: Response, next: NextFunction) => {
+itemRouter.post("/ingest", async (req: Request, res: Response, next: NextFunction) => {
   try {
     const parsed = ingestRequestSchema.parse(req.body);
-    const item = ingestContent(parsed, req.log);
+    const item = await ingestContent(parsed, req.log);
     res.status(201).json({ item: toSummary(item) });
   } catch (error) {
     next(error);
