@@ -1,4 +1,5 @@
 import { AddItemForm } from "./components/AddItemForm.js";
+import { AskPanel } from "./components/AskPanel.js";
 import { ItemList } from "./components/ItemList.js";
 import { useItems } from "./hooks/useItems.js";
 
@@ -15,6 +16,7 @@ export function App() {
       <main className="columns">
         <div className="column">
           <AddItemForm onAdded={reload} />
+          <AskPanel />
         </div>
         <div className="column">
           <ItemList items={items} total={total} isLoading={isLoading} error={error} />
