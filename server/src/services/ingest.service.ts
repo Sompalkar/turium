@@ -3,6 +3,7 @@ import type { Item } from "../domain/item.js";
 import type { IngestRequest } from "../schemas/ingest.schema.js";
 import { itemRepository } from "../repositories/item.repository.js";
 import { fetchPage } from "./url-fetcher.js";
+import { storeChunksForItem } from "./chunking.service.js";
 import type { Logger } from "../lib/logger.js";
 
 export async function ingestContent(request: IngestRequest, log: Logger): Promise<Item> {
@@ -11,10 +12,13 @@ export async function ingestContent(request: IngestRequest, log: Logger): Promis
   const item: Item = { id: randomUUID(), createdAt: new Date().toISOString(), ...draft };
 
   itemRepository.insert(item);
+  const chunks = storeChunksForItem(item, log);
+
   log.info("item ingested", {
     itemId: item.id,
     sourceType: item.sourceType,
     contentLength: item.content.length,
+    chunkCount: chunks.length,
   });
 
   return item;
