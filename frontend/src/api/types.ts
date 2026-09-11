@@ -28,3 +28,27 @@ export interface IngestUrlRequest {
 }
 
 export type IngestRequest = IngestNoteRequest | IngestUrlRequest;
+
+export interface AnswerSource {
+  citation: number;
+  chunkId: string;
+  itemId: string;
+  title: string;
+  sourceType: SourceType;
+  sourceUrl: string | null;
+  snippet: string;
+  score: number;
+}
+
+export interface QueryResponse {
+  question: string;
+  answer: string;
+  sources: AnswerSource[];
+  stats: {
+    candidateChunks: number;
+    retrievalMs: number;
+    model: string;
+    inputTokens: number;
+    outputTokens: number;
+  };
+}
