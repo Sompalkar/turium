@@ -14,4 +14,19 @@ export const MIGRATIONS: ReadonlyArray<{ name: string; sql: string }> = [
       CREATE INDEX idx_items_created_at ON items (created_at DESC);
     `,
   },
+  {
+    name: "002_create_chunks",
+    sql: `
+      CREATE TABLE chunks (
+        id          TEXT PRIMARY KEY,
+        item_id     TEXT NOT NULL REFERENCES items (id) ON DELETE CASCADE,
+        chunk_index INTEGER NOT NULL,
+        content     TEXT NOT NULL,
+        char_start  INTEGER NOT NULL,
+        char_end    INTEGER NOT NULL,
+        UNIQUE (item_id, chunk_index)
+      );
+      CREATE INDEX idx_chunks_item_id ON chunks (item_id);
+    `,
+  },
 ];
