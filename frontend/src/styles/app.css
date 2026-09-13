@@ -714,3 +714,39 @@ a.cite:hover {
 .item-delete {
   margin-left: auto;
 }
+
+/* Cold start notice */
+
+.waking {
+  max-width: 1180px;
+  margin: var(--space-5) auto 0;
+  padding: 0 var(--space-5);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.waking p {
+  flex: 1;
+  background: var(--accent-tint);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: var(--radius);
+  padding: 11px 14px;
+  font-size: 13.5px;
+  color: var(--accent-ink);
+}
+
+.waking-dot {
+  flex-shrink: 0;
+  width: 9px;
+  height: 9px;
+  margin-top: 15px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.35; transform: scale(0.8); }
+}
