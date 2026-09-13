@@ -577,7 +577,9 @@ a.cite:hover {
   z-index: 20;
   width: max-content;
   max-width: min(320px, 70vw);
-  display: flex;
+  /* Laid out only while shown. Left in the flow it would sit unpositioned past
+     the right edge and give a narrow screen a phantom sideways scroll. */
+  display: none;
   flex-direction: column;
   gap: 5px;
   padding: 10px 12px;
@@ -588,17 +590,12 @@ a.cite:hover {
   font-size: 12.5px;
   line-height: 1.5;
   text-align: left;
-  opacity: 0;
-  visibility: hidden;
   pointer-events: none;
-  transition: opacity 0.14s ease, transform 0.14s ease, visibility 0.14s;
 }
 
 .cite-wrap:hover .cite-tip,
 .cite-wrap:focus-within .cite-tip {
-  opacity: 1;
-  visibility: visible;
-  transform: translateY(0);
+  display: flex;
 }
 
 /* The little arrow pointing back at the chip. */

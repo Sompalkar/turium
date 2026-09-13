@@ -51,6 +51,9 @@ function keepTipOnScreen(event: MouseEvent<HTMLElement> | FocusEvent<HTMLElement
   const tip = wrap.querySelector<HTMLElement>(".cite-tip");
   if (!tip) return;
 
+  // Shown by :hover, but measure deterministically rather than trusting the
+  // order in which the style and the event land.
+  tip.style.display = "flex";
   const anchor = wrap.getBoundingClientRect();
   const width = tip.offsetWidth;
   let left = (anchor.width - width) / 2;
@@ -63,6 +66,7 @@ function keepTipOnScreen(event: MouseEvent<HTMLElement> | FocusEvent<HTMLElement
 
   tip.style.left = `${Math.round(left)}px`;
   tip.style.setProperty("--arrow-left", `${Math.round(anchor.width / 2 - left)}px`);
+  tip.style.removeProperty("display");
 }
 
 function preview(snippet: string): string {
