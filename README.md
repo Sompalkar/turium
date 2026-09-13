@@ -5,62 +5,44 @@ content and cite the passages they came from.
 
 ## Running it
 
-You need Node 24 or newer, because the server uses the built in `node:sqlite` module, and an
-Anthropic API key.
-
-Server first:
+You need **Node 24 or newer** (the server uses the built in `node:sqlite` module) and an
+**Anthropic API key**.
 
 ```bash
-cd server
-npm install
-cp .env.example .env   # paste your ANTHROPIC_API_KEY into it
+git clone https://github.com/Sompalkar/turium.git
+cd turium
+npm run setup
+```
+
+Add your key:
+
+```bash
+cp server/.env.example server/.env
+```
+
+Open `server/.env` and paste your key after `ANTHROPIC_API_KEY=`. Then start both halves with one
+command:
+
+```bash
 npm run dev
 ```
 
-Then the web app in a second terminal:
+Open **http://localhost:5173**. The API runs on port 4000 and Vite proxies `/api` to it, so the
+browser stays on one origin and there is no CORS setup to get wrong.
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+The very first start downloads the embedding model, about 90 MB, which takes a minute or so on a
+cold cache. It is cached afterwards and the server logs `embedding model ready` when it can
+answer questions. After that the only outbound calls are fetching URLs you save and generating
+answers.
 
-Open http://localhost:5173. Vite proxies `/api` to port 4000, so the browser stays on one origin
-and there is no CORS config to get wrong.
+Saving notes, saving links and browsing them all work without an API key. Only asking questions
+needs one, and without it the answer comes back as a plain `ANTHROPIC_API_KEY is not set` error
+rather than something cryptic.
 
-The first start downloads the embedding model, about 90 MB. It is cached afterwards and the
-server logs `embedding model ready` when it can serve queries. After that the only network calls
-are fetching URLs you save and generating answers.
+If you would rather run the two halves separately, `npm --prefix server run dev` and
+`npm --prefix frontend run dev` in two terminals do the same thing.
 
-`cd server && npm test` runs the tests.
-
-## Deploying
-
-`render.yaml` describes both services. The API is the fiddly one because it keeps state on disk.
-
-**API.** Root directory `server`, build `npm install --include=dev && npm run build`, start
-`npm start`, health check `/api/health`. It needs Node 24 or newer for `node:sqlite`, which
-`server/.node-version` pins. Set these:
-
-| Variable | Value |
-| --- | --- |
-| `ANTHROPIC_API_KEY` | your key |
-| `ALLOWED_ORIGINS` | the frontend origin, no trailing slash |
-| `DATABASE_FILE` | a path on the mounted disk, e.g. `/var/data/knowledge-inbox.db` |
-| `EMBEDDING_CACHE_DIR` | also on the disk, e.g. `/var/data/models` |
-
-Both disk paths matter. Without them the SQLite file and the 90 MB model are thrown away on every
-deploy, so the library empties itself and the first request after each restart pays to download
-the model again. With the cache on a disk the model loads in about 60ms instead. Render's free
-plan does not offer disks, so a free instance resets on every deploy.
-
-**Frontend.** Root directory `frontend`, build `npm install --include=dev && npm run build`,
-publish `dist`, with a rewrite from `/*` to `/index.html`. Set `VITE_API_BASE_URL` to the API
-origin. Vite inlines it at build time, so changing it needs a rebuild, not just a restart.
-
-The two are on different origins in production, which is why the API has a CORS allowlist.
-Locally none of this applies: Vite proxies `/api`, everything is same origin, and both variables
-can stay empty.
+Tests: `npm test`.
 
 ## How it works
 
@@ -257,6 +239,34 @@ One security note. The URL fetcher refuses private and local addresses by hostna
 the obvious attempts to make the server probe its own network. It does not stop a public domain
 whose DNS points at an internal address. The full fix resolves the name first and checks the
 address it is about to connect to.
+
+## Deploying
+
+`render.yaml` describes both services. The API is the fiddly one because it keeps state on disk.
+
+**API.** Root directory `server`, build `npm install --include=dev && npm run build`, start
+`npm start`, health check `/api/health`. It needs Node 24 or newer for `node:sqlite`, which
+`server/.node-version` pins. Set these:
+
+| Variable | Value |
+| --- | --- |
+| `ANTHROPIC_API_KEY` | your key |
+| `ALLOWED_ORIGINS` | the frontend origin, no trailing slash |
+| `DATABASE_FILE` | a path on the mounted disk, e.g. `/var/data/knowledge-inbox.db` |
+| `EMBEDDING_CACHE_DIR` | also on the disk, e.g. `/var/data/models` |
+
+Both disk paths matter. Without them the SQLite file and the 90 MB model are thrown away on every
+deploy, so the library empties itself and the first request after each restart pays to download
+the model again. With the cache on a disk the model loads in about 60ms instead. Render's free
+plan does not offer disks, so a free instance resets on every deploy.
+
+**Frontend.** Root directory `frontend`, build `npm install --include=dev && npm run build`,
+publish `dist`, with a rewrite from `/*` to `/index.html`. Set `VITE_API_BASE_URL` to the API
+origin. Vite inlines it at build time, so changing it needs a rebuild, not just a restart.
+
+The two are on different origins in production, which is why the API has a CORS allowlist.
+Locally none of this applies: Vite proxies `/api`, everything is same origin, and both variables
+can stay empty.
 
 ## Debugging
 

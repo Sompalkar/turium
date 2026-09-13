@@ -1,0 +1,17 @@
+{
+  "name": "knowledge-inbox",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "npm install --prefix server && npm install --prefix frontend",
+    "dev": "concurrently -n api,web -c green,cyan \"npm --prefix server run dev\" \"npm --prefix frontend run dev\"",
+    "test": "npm --prefix server test",
+    "build": "npm --prefix server run build && npm --prefix frontend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}
