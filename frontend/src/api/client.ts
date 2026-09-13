@@ -62,6 +62,8 @@ export const api = {
 
   getItem: (id: string) => request<{ item: ItemDetail }>(`/api/items/${id}`),
 
+  deleteItem: (id: string) => request<{ deleted: string }>(`/api/items/${id}`, { method: "DELETE" }),
+
   ingest: (body: IngestRequest) =>
     request<{ item: ItemSummary }>("/api/ingest", { method: "POST", body: JSON.stringify(body) }),
 
