@@ -58,3 +58,25 @@ test("a word containing nav in prose is not treated as a menu", () => {
   const page = extractReadableText("<body><p>We had to navigate the tradeoffs carefully.</p></body>");
   assert.equal(page.text, "We had to navigate the tradeoffs carefully.");
 });
+
+// Wikipedia puts "main-menu" classes on <html>, which a careless selector treats
+// as one enormous menu and deletes the whole article.
+test("a menu class on a wrapper does not delete the article", () => {
+  const article = "This sentence is the article body and must survive extraction. ".repeat(12);
+  const page = extractReadableText(
+    `<html class="vector-feature-main-menu-pinned-disabled"><body class="skin-vector">
+       <div class="mw-navigation"><a href="/a">Jump</a><a href="/b">Search</a></div>
+       <p>${article}</p>
+     </body></html>`,
+  );
+
+  assert.ok(page.text.includes("must survive extraction"));
+  assert.ok(!page.text.includes("Jump"));
+});
+
+test("a link heavy block is dropped even when it is long", () => {
+  const links = Array.from({ length: 40 }, (_, i) => `<a href="/p${i}">Related article number ${i}</a>`).join(" ");
+  const page = extractReadableText(`<body><div class="navbox">${links}</div><p>The actual prose.</p></body>`);
+
+  assert.equal(page.text, "The actual prose.");
+});
