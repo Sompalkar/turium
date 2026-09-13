@@ -1,6 +1,7 @@
 import cors from "cors";
 import { config } from "../config.js";
 import { logger } from "../lib/logger.js";
+import { normalizeOrigin } from "../lib/origins.js";
 
 // Requests with no Origin header are curl, health checks and same origin calls.
 export function corsMiddleware() {
@@ -15,7 +16,7 @@ export function corsMiddleware() {
 
   return cors({
     origin(origin, callback) {
-      if (!origin || config.allowedOrigins.includes(origin)) {
+      if (!origin || config.allowedOrigins.includes(normalizeOrigin(origin))) {
         callback(null, true);
         return;
       }

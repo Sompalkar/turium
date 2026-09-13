@@ -1,3 +1,5 @@
+import { parseAllowedOrigins } from "./lib/origins.js";
+
 // Reads server/.env if it exists. Real deployments set real environment variables.
 try {
   process.loadEnvFile();
@@ -12,10 +14,7 @@ export const config = {
   databaseFile: process.env.DATABASE_FILE ?? "data/knowledge-inbox.db",
   // Browsers on another origin need to be named here. In development the Vite
   // proxy keeps everything same origin, so the list can stay empty.
-  allowedOrigins: (process.env.ALLOWED_ORIGINS ?? "")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean),
+  allowedOrigins: parseAllowedOrigins(process.env.ALLOWED_ORIGINS ?? ""),
   urlFetch: {
     timeoutMs: Number(process.env.URL_FETCH_TIMEOUT_MS ?? 10_000),
     maxBytes: Number(process.env.URL_FETCH_MAX_BYTES ?? 2_000_000),
