@@ -1,5 +1,6 @@
 import { useMemo, useState, type FormEvent, type KeyboardEvent } from "react";
 import { useAsk } from "../hooks/useAsk.js";
+import { useSlowRequest } from "../hooks/useSlowRequest.js";
 import type { ItemSummary, QueryResponse } from "../api/types.js";
 import { parseCitedNumbers } from "../lib/citations.js";
 import { AnswerText } from "./AnswerText.js";
@@ -20,6 +21,7 @@ export function AskPanel({ items, result, onAnswered }: Props) {
   const [question, setQuestion] = useState("");
   const [showOthers, setShowOthers] = useState(false);
   const { isAsking, error, ask } = useAsk();
+  const isSlow = useSlowRequest(isAsking, 6000);
 
   // The model cites only what it used, so the rest are near misses worth keeping aside.
   const { cited, others } = useMemo(() => {
@@ -70,7 +72,11 @@ export function AskPanel({ items, result, onAnswered }: Props) {
           <Button type="submit" disabled={isTooShort} loading={isAsking}>
             {isAsking ? "Searching" : "Ask"}
           </Button>
-          <span className="hint">Enter to ask, shift and enter for a new line.</span>
+          <span className="hint">
+            {isSlow
+              ? "Still going. The free instance may be waking up, which takes up to a minute."
+              : "Enter to ask, shift and enter for a new line."}
+          </span>
         </div>
       </form>
 
