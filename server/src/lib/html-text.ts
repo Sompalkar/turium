@@ -18,6 +18,15 @@ const NOISE_SELECTORS = [
   "[role='contentinfo']",
   "[role='complementary']",
   "[role='search']",
+  // Plenty of sites mark menus with a class rather than a nav element or a role.
+  "[class*='menu' i]",
+  "[class*='nav' i]",
+  "[class*='sidebar' i]",
+  "[class*='breadcrumb' i]",
+  "[id*='menu' i]",
+  "[id*='nav' i]",
+  "[id*='sidebar' i]",
+  "[id*='breadcrumb' i]",
 ].join(",");
 
 // Menus and link lists leave behind stray one or two character lines like "v t e".
