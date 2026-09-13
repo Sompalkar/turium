@@ -1,6 +1,7 @@
 import { env, pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
 import { config } from "../config.js";
 import { logger } from "../lib/logger.js";
+import { ensureDirectory } from "../lib/ensure-directory.js";
 
 let extractor: Promise<FeatureExtractionPipeline> | null = null;
 
@@ -8,7 +9,10 @@ let extractor: Promise<FeatureExtractionPipeline> | null = null;
 function getExtractor(): Promise<FeatureExtractionPipeline> {
   if (!extractor) {
     // Without a writable cache the model is fetched again after every restart.
-    if (config.embedding.cacheDir) env.cacheDir = config.embedding.cacheDir;
+    if (config.embedding.cacheDir) {
+      ensureDirectory(config.embedding.cacheDir, "the embedding model cache");
+      env.cacheDir = config.embedding.cacheDir;
+    }
     logger.info("loading embedding model", { model: config.embedding.model });
     extractor = pipeline("feature-extraction", config.embedding.model);
   }

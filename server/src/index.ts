@@ -1,13 +1,10 @@
 import "./preflight.js";
-import { mkdirSync } from "node:fs";
-import { dirname } from "node:path";
 import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { getDb } from "./db/client.js";
 import { logger } from "./lib/logger.js";
 import { warmUpEmbedder } from "./services/embedder.js";
 
-mkdirSync(dirname(config.databaseFile), { recursive: true });
 getDb();
 
 createApp().listen(config.port, () => {
