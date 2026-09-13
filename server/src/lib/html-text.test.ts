@@ -41,3 +41,20 @@ test("prefers the main region over the whole body", () => {
 test("a page with no readable text comes back empty", () => {
   assert.equal(extractReadableText("<body><script>var a = 1;</script></body>").text, "");
 });
+
+test("menus marked with a class are dropped too", () => {
+  const page = extractReadableText(
+    `<body>
+       <div class="menu mainmenu"><ul><li><a href="/">Home</a><li><a href="/docs">Docs</a></ul></div>
+       <div id="sidebar"><a href="/x">Related</a></div>
+       <p>The paragraph that matters.</p>
+     </body>`,
+  );
+
+  assert.equal(page.text, "The paragraph that matters.");
+});
+
+test("a word containing nav in prose is not treated as a menu", () => {
+  const page = extractReadableText("<body><p>We had to navigate the tradeoffs carefully.</p></body>");
+  assert.equal(page.text, "We had to navigate the tradeoffs carefully.");
+});
