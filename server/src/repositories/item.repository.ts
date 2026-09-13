@@ -33,6 +33,12 @@ export const itemRepository = {
     return row.total;
   },
 
+  deleteById(id: string): boolean {
+    // Chunks go with it through the foreign key cascade.
+    const result = getDb().prepare(`DELETE FROM items WHERE id = ?`).run(id);
+    return Number(result.changes) > 0;
+  },
+
   findById(id: string): Item | null {
     const row = getDb().prepare(`SELECT * FROM items WHERE id = ?`).get(id) as
       | ItemRow
