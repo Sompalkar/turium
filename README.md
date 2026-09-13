@@ -137,6 +137,10 @@ means the passage came back but did not hold the fact.
 deploy. Set `ANTHROPIC_API_KEY` and `ALLOWED_ORIGINS` (the frontend origin) on the API, and
 `VITE_API_BASE_URL` (the API origin) on the frontend, which Vite inlines at build time.
 
+`SEED_SAMPLE_DATA=true` fills an empty library with a few notes and one fetched page on startup,
+so a host without a disk still has something to show after it restarts. It checks first and does
+nothing once anything has been saved, and it is off unless you ask for it.
+
 ## Tests
 
 Sixteen tests, `npm test`. They cover what fails quietly rather than loudly: the chunker (limits,
