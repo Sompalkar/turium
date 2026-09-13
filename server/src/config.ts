@@ -12,6 +12,8 @@ export const config = {
   nodeEnv: process.env.NODE_ENV ?? "development",
   isProduction: process.env.NODE_ENV === "production",
   databaseFile: process.env.DATABASE_FILE ?? "data/knowledge-inbox.db",
+  // Fills an empty library on startup so a fresh deployment has something to show.
+  seedSampleData: process.env.SEED_SAMPLE_DATA === "true",
   // Browsers on another origin need to be named here. In development the Vite
   // proxy keeps everything same origin, so the list can stay empty.
   allowedOrigins: parseAllowedOrigins(process.env.ALLOWED_ORIGINS ?? ""),
