@@ -1,12 +1,16 @@
+import { dirname } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { config } from "../config.js";
 import { logger } from "../lib/logger.js";
+import { ensureDirectory } from "../lib/ensure-directory.js";
 import { MIGRATIONS } from "./migrations.js";
 
 let instance: DatabaseSync | null = null;
 
 export function getDb(): DatabaseSync {
   if (instance) return instance;
+
+  ensureDirectory(dirname(config.databaseFile), "the database");
 
   instance = new DatabaseSync(config.databaseFile);
   instance.exec("PRAGMA journal_mode = WAL");
