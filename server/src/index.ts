@@ -1,3 +1,4 @@
+import "./preflight.js";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { createApp } from "./app.js";
