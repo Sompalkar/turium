@@ -3,6 +3,13 @@
 Save notes and links, then ask questions about them. Answers are written from your own saved
 content and cite the passages they came from.
 
+**Live demo: https://turium.vercel.app**
+
+The demo API is on a free instance that sleeps when idle, so the first request after a quiet spell
+takes half a minute or so while it wakes and loads the embedding model. That instance has no
+persistent disk either, so it refills itself with a few sample notes whenever it restarts. Running
+it locally, as below, has neither limitation.
+
 ## Run it
 
 Needs **Node 24 or newer** (the server uses the built in `node:sqlite`) and an **Anthropic API key**.
