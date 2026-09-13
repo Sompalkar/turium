@@ -47,6 +47,17 @@ itemRouter.get("/items/:id/chunks", (req: Request, res: Response, next: NextFunc
   }
 });
 
+itemRouter.delete("/items/:id", (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const id = String(req.params.id);
+    if (!itemRepository.deleteById(id)) throw notFound(`No item with id ${id}`);
+    req.log.info("item deleted", { itemId: id });
+    res.json({ deleted: id });
+  } catch (error) {
+    next(error);
+  }
+});
+
 itemRouter.get("/items/:id", (req: Request, res: Response, next: NextFunction) => {
   try {
     const id = String(req.params.id);

@@ -39,8 +39,9 @@ however large the inbox grows.
 | `GET /api/items` | Saved items, newest first, `limit` and `offset`. |
 | `POST /api/query` | `{question, topK}` returns the answer, its sources and token counts. |
 
-Also `GET /api/items/:id/chunks` to see what retrieval works with, and `GET`/`DELETE /api/queries`
-for the history that makes an answer survive a refresh.
+Also `DELETE /api/items/:id` to remove an item and its chunks, `GET /api/items/:id/chunks` to see
+what retrieval works with, and `GET`/`DELETE /api/queries` for the history that makes an answer
+survive a refresh.
 
 An answer carries `[1]` markers matching a numbered `sources` array, each with the passage, its
 item and a similarity score. The model cites only what it used, so a five source answer often has

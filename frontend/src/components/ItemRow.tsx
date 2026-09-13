@@ -1,12 +1,42 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { api, ApiError } from "../api/client.js";
 import type { ItemSummary } from "../api/types.js";
 import { Badge } from "./ui/Badge.js";
 
-export function ItemRow({ item }: { item: ItemSummary }) {
+interface Props {
+  item: ItemSummary;
+  onDeleted: () => Promise<void>;
+}
+
+export function ItemRow({ item, onDeleted }: Props) {
   const [fullContent, setFullContent] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // Asking twice is enough of a guard, and it undoes itself.
+  useEffect(() => {
+    if (!isConfirming) return;
+    const timer = setTimeout(() => setIsConfirming(false), 4000);
+    return () => clearTimeout(timer);
+  }, [isConfirming]);
+
+  async function remove() {
+    if (!isConfirming) {
+      setIsConfirming(true);
+      return;
+    }
+    setIsConfirming(false);
+    setIsDeleting(true);
+    try {
+      await api.deleteItem(item.id);
+      await onDeleted();
+    } catch (caught) {
+      setError(caught instanceof ApiError ? caught.message : "Could not delete this item");
+      setIsDeleting(false);
+    }
+  }
 
   const isTruncated = item.contentLength > item.preview.length;
 
@@ -50,10 +80,19 @@ export function ItemRow({ item }: { item: ItemSummary }) {
         ) : null}
 
         {item.sourceUrl ? (
-          <a className="item-link" href={item.sourceUrl} target="_blank" rel="noreferrer">
+          <a href={item.sourceUrl} target="_blank" rel="noreferrer">
             Open source
           </a>
         ) : null}
+
+        <button
+          type="button"
+          className={isConfirming ? "link-btn link-danger item-delete" : "link-btn item-delete"}
+          onClick={remove}
+          disabled={isDeleting}
+        >
+          {isDeleting ? "Deleting" : isConfirming ? "Really delete?" : "Delete"}
+        </button>
       </div>
     </li>
   );

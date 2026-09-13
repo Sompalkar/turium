@@ -713,3 +713,7 @@ a.cite:hover {
   color: var(--muted);
   overflow-wrap: anywhere;
 }
+
+.item-delete {
+  margin-left: auto;
+}

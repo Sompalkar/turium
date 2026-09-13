@@ -51,7 +51,7 @@ export function App() {
         </div>
         <div className="col col-side">
           <AddItemForm onAdded={reload} />
-          <ItemList items={items} total={total} isLoading={isLoading} error={error} />
+          <ItemList items={items} total={total} isLoading={isLoading} error={error} onDeleted={reload} />
         </div>
       </main>
     </div>
