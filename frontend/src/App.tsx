@@ -4,13 +4,18 @@ import { AddItemForm } from "./components/AddItemForm.js";
 import { AskPanel } from "./components/AskPanel.js";
 import { HistoryPanel } from "./components/HistoryPanel.js";
 import { ItemList } from "./components/ItemList.js";
+import { WakingNotice } from "./components/WakingNotice.js";
 import { useHistory } from "./hooks/useHistory.js";
 import { useItems } from "./hooks/useItems.js";
+import { useSlowRequest } from "./hooks/useSlowRequest.js";
 
 export function App() {
   const { items, total, isLoading, error, reload } = useItems();
   const history = useHistory();
   const [result, setResult] = useState<QueryResponse | null>(null);
+
+  // A sleeping free instance takes a while to answer the very first request.
+  const isWaking = useSlowRequest(isLoading && items.length === 0);
 
   // After a refresh, put the most recent answer back on screen.
   useEffect(() => {
@@ -33,6 +38,8 @@ export function App() {
           <p className="brand-tag">Save what matters, ask it later</p>
         </div>
       </header>
+
+      {isWaking ? <WakingNotice /> : null}
 
       <main className="layout">
         <div className="col col-main">
