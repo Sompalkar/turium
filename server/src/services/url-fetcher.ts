@@ -27,7 +27,10 @@ export async function fetchPage(rawUrl: string, log: Logger): Promise<ExtractedP
     : { title: null, text: body.trim() };
 
   if (page.text.length === 0) {
-    throw badRequest("empty_page", "The page was fetched but had no readable text. It may be rendered entirely with JavaScript.");
+    throw badRequest(
+      "empty_page",
+      "That page has no readable text in its HTML, which usually means it draws itself with JavaScript after loading. Copy the part you want and save it as a note instead.",
+    );
   }
 
   log.info("page fetched", {
@@ -45,7 +48,9 @@ async function requestWithTimeout(url: URL): Promise<Response> {
     return await fetch(url, {
       redirect: "follow",
       signal: AbortSignal.timeout(config.urlFetch.timeoutMs),
-      headers: { "user-agent": config.urlFetch.userAgent, accept: "text/html,text/plain" },
+      // No Accept header. A narrow one sent some sites into a redirect loop, and
+      // the content type of the reply is checked below anyway.
+      headers: { "user-agent": config.urlFetch.userAgent },
     });
   } catch (error) {
     if (error instanceof Error && error.name === "TimeoutError") {

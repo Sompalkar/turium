@@ -43,8 +43,14 @@ however large the inbox grows.
 | Endpoint | Does |
 | --- | --- |
 | `POST /api/ingest` | Saves `{sourceType: "note", text}` or `{sourceType: "url", url}`. URLs are fetched and stripped to text server side. |
+
 | `GET /api/items` | Saved items, newest first, `limit` and `offset`. |
 | `POST /api/query` | `{question, topK}` returns the answer, its sources and token counts. |
+
+Fetching reads the HTML as served, without running JavaScript, which covers ordinary articles and
+documentation. A page that draws itself entirely client side has nothing in its HTML to read, so
+it falls back to the page's own title and description, and says so plainly when there is not even
+that. Running a headless browser would fix it and costs far more than it is worth here.
 
 Also `DELETE /api/items/:id` to remove an item and its chunks, `GET /api/items/:id/chunks` to see
 what retrieval works with, and `GET`/`DELETE /api/queries` for the history that makes an answer

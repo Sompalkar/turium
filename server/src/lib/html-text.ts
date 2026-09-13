@@ -56,7 +56,22 @@ export function extractReadableText(html: string): ExtractedPage {
     CONTENT_SELECTORS.map((selector) => $(selector).first())
       .find((node) => node.length > 0 && node.text().trim().length > 200) ?? $("body");
 
-  return { title, text: normalizeWhitespace(container.text()) };
+  const text = normalizeWhitespace(container.text());
+  if (text.length > 0) return { title, text };
+
+  // Nothing in the body, which usually means the page renders itself with
+  // JavaScript. Its own summary is thin but better than refusing the save.
+  return { title, text: metadataText($, title) };
+}
+
+function metadataText($: cheerio.CheerioAPI, title: string | null): string {
+  const description =
+    $("meta[property='og:description']").attr("content") ??
+    $("meta[name='description']").attr("content") ??
+    $("meta[name='twitter:description']").attr("content") ??
+    "";
+
+  return [title, description.trim()].filter(Boolean).join("\n").trim();
 }
 
 // A menu is short, or mostly links, or both. Real prose is neither.

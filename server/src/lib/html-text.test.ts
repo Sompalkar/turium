@@ -80,3 +80,28 @@ test("a link heavy block is dropped even when it is long", () => {
 
   assert.equal(page.text, "The actual prose.");
 });
+
+test("a page that renders itself with javascript falls back to its metadata", () => {
+  const page = extractReadableText(
+    `<html><head>
+       <title>Robo Train</title>
+       <meta property="og:description" content="Train and evaluate robotics policies in the browser." />
+     </head><body><div id="root"></div></body></html>`,
+  );
+
+  assert.equal(page.title, "Robo Train");
+  assert.equal(page.text, "Robo Train\nTrain and evaluate robotics policies in the browser.");
+});
+
+test("body text is preferred over metadata when there is any", () => {
+  const page = extractReadableText(
+    `<html><head><meta name="description" content="Should not be used." /></head>
+     <body><p>The real article text.</p></body></html>`,
+  );
+
+  assert.equal(page.text, "The real article text.");
+});
+
+test("a shell with neither text nor metadata is still empty", () => {
+  assert.equal(extractReadableText("<html><head></head><body><div id=root></div></body></html>").text, "");
+});
