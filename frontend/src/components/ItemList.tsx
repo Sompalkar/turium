@@ -9,9 +9,10 @@ interface Props {
   total: number;
   isLoading: boolean;
   error: string | null;
+  onDeleted: () => Promise<void>;
 }
 
-export function ItemList({ items, total, isLoading, error }: Props) {
+export function ItemList({ items, total, isLoading, error, onDeleted }: Props) {
   const isFirstLoad = isLoading && items.length === 0;
 
   return (
@@ -37,7 +38,7 @@ export function ItemList({ items, total, isLoading, error }: Props) {
       {items.length > 0 ? (
         <ul className="items">
           {items.map((item) => (
-            <ItemRow key={item.id} item={item} />
+            <ItemRow key={item.id} item={item} onDeleted={onDeleted} />
           ))}
         </ul>
       ) : null}
