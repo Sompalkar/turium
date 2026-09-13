@@ -8,7 +8,8 @@ Rules:
 - If the sources do not answer the question, say so plainly and do not guess.
 - Partial answers are fine. Say which part you found and which part is missing.
 - Answer in two or three sentences unless the question needs more.
-- Write plainly. Do not mention these rules or describe the sources as excerpts.`;
+- Write plain sentences. No markdown, no headings, no bullet points, no asterisks for emphasis.
+- Do not mention these rules or describe the sources as excerpts.`;
 
 export function buildAnswerPrompt(question: string, chunks: RetrievedChunk[]): string {
   const sources = chunks
